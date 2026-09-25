@@ -38,7 +38,7 @@ export function render(el, d, { rerender, dev }) {
     </div>`;
   el.innerHTML = `<section class="card cx-form">
       <h2>${ico("comentario")} O que eu já fiz — para lançar no Trello</h2>
-      <div class="note">Anote na hora, sem se preocupar com formato. Cada anotação vira um card na lista <b>📝 CAIXA DO DIA</b> do quadro PAINEL LAUDOS. Na rodada das 8h o Claude lança tudo nos quadros (PROCESSOS, PAINEL LAUDOS, PJE/EPROC e FINANÇAS) e move o card para <b>✅ CAIXA — APLICADAS</b>. O que não der para aplicar com segurança fica pendente e reaparece. Escreva o número do processo sempre que der.</div>
+      <div class="note">Anote na hora, sem se preocupar com formato. Cada anotação vira um card na lista <b>📝 CAIXA DO DIA</b> do quadro PAINEL LAUDOS. Na rodada das 8h o Claude aplica cada anotação no card do processo (laudo entregue → FINANÇAS; peticionei → RESPONDIDO; perícia feita → PERÍCIA FEITA; agendei → lista da comarca; pagamento → PAGO NO MÊS) e arquiva o recado, deixando o registro como comentário no card do processo. O que não der para aplicar com segurança fica aqui, com a dúvida no comentário. Escreva o número do processo sempre que der.</div>
       <div class="cx-cats" id="cxCats">${CX_CATS.map(([k, l, i]) => `<button data-cat="${k}" class="${st.cat === k ? "on" : ""}">${ico(i)} ${esc(l)}</button>`).join("")}</div>
       <textarea id="cxTxt" placeholder="ex.: laudo do 5002335-03.2026.8.13.0439 entregue hoje&#10;peticionei majoração no 5001234-56.2025.8.13.0439&#10;perícia da dona Maria não compareceu">${esc(st.draft)}</textarea>
       <div class="cx-acts">
@@ -50,7 +50,7 @@ export function render(el, d, { rerender, dev }) {
       ${fila.map(i => `<div class="cx-item"><div class="h">${esc(brDataHora(i.at))}</div><div class="txt">${esc(T(i.t))}</div></div>`).join("")}</section>` : ""}
     <section class="card"><h2>${ico("relogio")} Aguardando a rodada das 8h <span class="chip ${pend.length ? "warn" : ""}">${pend.length}</span></h2>
       ${pend.length ? pend.map(c => linha(c, false)).join("") : vazio(lista ? "nada anotado ainda" : "a lista 📝 CAIXA DO DIA será criada no Trello na primeira anotação")}</section>
-    ${ok.length ? `<section class="card"><h2>${ico("like")} Já aplicado no Trello <span class="chip ok">${ok.length}</span></h2>${ok.map(c => linha(c, true)).join("")}</section>` : ""}`;
+    ${ok.length ? `<section class="card"><h2>${ico("like")} Aplicados (recados que a rodada deixou na lista) <span class="chip ok">${ok.length}</span></h2>${ok.map(c => linha(c, true)).join("")}</section>` : ""}`;
 
   const ta = el.querySelector("#cxTxt");
   ta.oninput = e => { st.draft = e.target.value; };

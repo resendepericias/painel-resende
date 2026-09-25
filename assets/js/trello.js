@@ -90,7 +90,7 @@ export async function anotaCaixa(dados, texto, catNome, proc) {
   const l = await listaCaixa(dados, true);
   const hoje = HOJE();
   const nome = `[${brDate(hoje)} ${agoraHM()}]${catNome ? " " + catNome + " —" : ""} ${texto.replace(/\s+/g, " ").slice(0, 140)}`;
-  const desc = `${texto}\n\n${proc ? "Processo: " + proc + "\n" : ""}Origem: site do painel · ${brDate(hoje, true)} ${agoraHM()}\nStatus: PENDENTE — a rodada das 8h aplica nos quadros e move este card para ✅ CAIXA — APLICADAS.`;
+  const desc = `${texto}\n\n${proc ? "Processo: " + proc + "\n" : ""}Origem: site do painel · ${brDate(hoje, true)} ${agoraHM()}\nStatus: PENDENTE — a rodada das 8h aplica no card do processo, comenta lá o que fez e arquiva este recado.`;
   const c = await post("/cards", { idList: l.id, name: nome, desc, pos: "top" });
   return { id: c.id, n: c.name, desc, u: c.shortUrl || c.url, l: l.name, lid: l.id, q: "laudos", at: new Date().toISOString(), lb: [] };
 }

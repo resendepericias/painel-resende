@@ -7,7 +7,7 @@ Painel pessoal da Priscila Resende, com a identidade visual da Resende Perícias
 ## O que tem
 
 - **Hoje (capa):** hoje + próximos 7 dias; lembretes (do Google Agenda, eventos com “Lembrete:” no título); pendências separadas em quatro blocos (laudo, complementar/impugnação, resposta a intimação, agendamento).
-- **Caixa do dia:** cada anotação vira card na lista `📝 CAIXA DO DIA` do quadro PAINEL LAUDOS 2026. A rodada das 8h aplica nos quadros e move o card para `✅ CAIXA — APLICADAS`.
+- **Caixa do dia:** cada anotação vira card na lista `📝 CAIXA DO DIA` do quadro PAINEL LAUDOS 2026. A rodada das 8h aplica no card do processo e arquiva o recado.
 - **Laudo a fazer · Complementar/impugnação · Agendar · PJe/eproc · Cobrança · Visão geral** — tudo o que o painel anterior mostrava, com gráficos por comarca, por tema, por mês e valores a receber.
 - **Busca de processo:** número (com ou sem pontuação) ou nome do periciado → ficha completa: em que quadro e lista está, andamento (bloco ACOMPANHAMENTO PROCESSUAL), tudo o que está escrito no card, valor, histórico de cobranças, ordem de pagamento, prazos e intimações do quadro PJE, links do Trello e do PJe/eproc.
 - **Modo apresentação**, tema claro/escuro, atalho na tela inicial (PWA), última carga boa guardada no aparelho (abre sem internet, com aviso “dados de <data/hora>”).
@@ -71,5 +71,6 @@ A agenda é lida 3× ao dia. Para ler agora: GitHub → Actions → *agenda* →
 ## Caixa do dia — protocolo da rodada das 8h
 
 - Cards abertos em `📝 CAIXA DO DIA` são anotações pendentes. Nome: `[dd/mm hh:mm] Categoria — texto`; descrição com o texto completo, `Processo:` e `Origem: site do painel`.
-- Ao aplicar, a rodada escreve um comentário no card com o que fez e **move** o card para `✅ CAIXA — APLICADAS`.
-- O que não der para aplicar com segurança fica em `📝 CAIXA DO DIA`, com comentário explicando, e reaparece no site.
+- Aplicar = agir no **card do processo**: laudo entregue → card vai para FINANÇAS `🧾 ENTREGUE — AINDA SEM COBRANCA` com `[ENTREGUE dd/mm/aaaa]` no título; peticionei → card do PJE/EPROC vai para `✅ RESPONDIDO`; perícia feita → card sai de PROCESSOS para PAINEL LAUDOS `🖊️ PERICIA FEITA`; agendei → card sai de ACEITAS para a lista `🗓️` da comarca com `[COMARCA-DD-MM-AA]` no título; pagamento → FINANÇAS `✅ PAGO NO MES`; prazo novo → due do card.
+- Depois de aplicar, a rodada escreve no card do processo um comentário com o que fez (e a data) e **arquiva** o recado da Caixa.
+- O que não der para aplicar com segurança fica em `📝 CAIXA DO DIA`, com comentário explicando a dúvida, e reaparece no site. A lista `✅ CAIXA — APLICADAS` existe só como opção; o padrão é arquivar.
