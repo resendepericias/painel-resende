@@ -14,7 +14,7 @@ export function render(el, d, { rerender, recarrega, agendaInfo }) {
       <li>Abra <a href="https://trello.com/power-ups/admin" target="_blank" rel="noopener">trello.com/power-ups/admin</a> → <b>Novo</b> → nome “Painel Resende”, área de trabalho a sua, e-mail seu → <b>Criar</b>. Depois entre em <b>Chave de API</b> → <b>Gerar uma nova chave de API</b>. Em <b>Origens permitidas</b>, cole: <code>${esc(retorno)}</code></li>
       <li>Cole a chave aqui:<br><input id="cfgKey" placeholder="chave de API (32 caracteres)" value="${esc(c.key || "")}" autocomplete="off" spellcheck="false"></li>
       <li>Clique em <b>Autorizar no Trello</b>. O Trello pergunta se permite; ao aceitar, ele volta para este site já com o token. (Se não voltar, copie o token da tela do Trello e cole abaixo.)<br>
-        <button class="btn pri" id="cfgAuth">Autorizar no Trello</button><br>
+        <button class="btn pri" id="cfgAuth">Autorizar no Trello</button> <button class="btn" id="cfgAuthManual">Ver o token para copiar</button><br>
         <input id="cfgToken" placeholder="token (cola aqui se o Trello não voltar sozinho)" value="${esc(c.token || "")}" autocomplete="off" spellcheck="false"></li>
     </ol>
     <div class="cx-acts"><button class="btn pri" id="cfgSalvar">Salvar e testar</button> ${temCred() ? `<button class="btn" id="cfgSair">Apagar chave deste aparelho</button>` : ""} <span class="hint" id="cfgMsg">${temCred() ? "chave guardada desde " + new Date(c.desde).toLocaleDateString("pt-BR") : "sem chave neste aparelho"}</span></div>
@@ -43,6 +43,13 @@ export function render(el, d, { rerender, recarrega, agendaInfo }) {
     if (!key) { msg("cole a chave de API primeiro"); return; }
     lsSet("rpm.keyTmp", key);
     location.href = urlAutorizar(key, retorno);
+  };
+  el.querySelector("#cfgAuthManual").onclick = () => {
+    const key = el.querySelector("#cfgKey").value.trim();
+    if (!key) { msg("cole a chave de API primeiro"); return; }
+    lsSet("rpm.keyTmp", key);
+    window.open(urlAutorizar(key, ""), "_blank");   // o Trello mostra o token na tela; copiar e colar no campo abaixo
+    msg("na tela do Trello, clique em Permitir, copie o token e cole no campo abaixo; depois Salvar e testar");
   };
   el.querySelector("#cfgSalvar").onclick = async () => {
     const key = el.querySelector("#cfgKey").value.trim(), token = el.querySelector("#cfgToken").value.trim();
