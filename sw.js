@@ -1,6 +1,6 @@
 /* Service worker — deixa o site abrir sem internet (a última carga boa fica no IndexedDB, o visual fica aqui).
    Estratégia: rede primeiro; se falhar, cache. O Trello e o Google nunca passam por aqui. */
-const V = "rpm-2026.09.25";
+const V = "rpm-2026.09.25b";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "assets/css/app.css",
   "assets/js/app.js", "assets/js/config.js", "assets/js/util.js", "assets/js/parse.js", "assets/js/trello.js", "assets/js/regras.js", "assets/js/agenda.js",
   "assets/js/apresentacao.js", "assets/js/charts.js", "assets/js/ui.js",

@@ -1,7 +1,7 @@
 /* Painel Resende — inicialização, navegação e carga de dados. */
 import { APP } from "./config.js";
 import { esc, brDataHora, lsGet, lsSet, lsDel, ico, pintaIcones, debounce, HOJE } from "./util.js";
-import { temCred, salvaCred, carregaQuadros, cargaConfiavel, cargaSalva, guardaCarga } from "./trello.js";
+import { temCred, cred, salvaCred, carregaQuadros, cargaConfiavel, cargaSalva, guardaCarga } from "./trello.js";
 import { sanearPrazos, filas, vencidos, pendentes, aceitas, pjePendentes, aCobrar } from "./regras.js";
 import { carregaAgenda } from "./agenda.js";
 import { APRES, ligaApres, indexaNomes, T } from "./apresentacao.js";
@@ -163,8 +163,13 @@ async function recarrega({ soAgenda = false } = {}) {
 
 /* token voltando do Trello: #token=xxx */
 (function pegaToken() {
-  const m = /[#&]token=([0-9a-f]{32,})/i.exec(location.hash);
-  if (m) { const key = lsGet("rpm.keyTmp", ""); if (key) { salvaCred(key, m[1]); lsDel("rpm.keyTmp"); } history.replaceState(null, "", location.pathname + "#hoje"); }
+  /* tokens novos do Trello começam com "ATTA" e não são só hexadecimais */
+  const m = /[#&?]token=([A-Za-z0-9_\-]{32,})/.exec(location.hash) || /[?&]token=([A-Za-z0-9_\-]{32,})/.exec(location.search);
+  if (m) {
+    const key = lsGet("rpm.keyTmp", "") || (cred() || {}).key || "";
+    if (key) { salvaCred(key, m[1]); lsDel("rpm.keyTmp"); history.replaceState(null, "", location.pathname + "#hoje"); }
+    else history.replaceState(null, "", location.pathname + "#config");
+  }
 })();
 
 async function init() {

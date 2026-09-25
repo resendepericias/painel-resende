@@ -6,6 +6,7 @@ import { senhaAgenda, salvaSenhaAgenda } from "../agenda.js";
 
 export function render(el, d, { rerender, recarrega, agendaInfo }) {
   const c = cred() || {}; const retorno = location.origin + location.pathname;
+  if (!c.key) c.key = lsGet("rpm.keyTmp", "");   // chave colada antes de autorizar não se perde
   el.innerHTML = `<section class="card">
     <h2>${ico("cadeado")} Trello — chave deste aparelho</h2>
     <div class="note">O site lê os quatro quadros direto do Trello, aqui no navegador. Nada passa por servidor nenhum. A chave fica só neste aparelho e pode ser cancelada a qualquer momento em <a href="https://trello.com/my/account" target="_blank" rel="noopener">trello.com/my/account → Aplicativos</a>. Use uma chave separada da que o Claude usa.</div>
