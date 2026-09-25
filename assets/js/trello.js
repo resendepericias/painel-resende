@@ -8,7 +8,8 @@ const CRED_KEY = "rpm.trello";
 const CACHE_KEY = "carga";
 
 export function cred() { return lsGet(CRED_KEY, null); }
-export function salvaCred(key, token) { lsSet(CRED_KEY, { key: key.trim(), token: token.trim(), desde: new Date().toISOString() }); }
+const limpa = s => String(s || "").replace(/[^A-Za-z0-9_\-]/g, "");   // tira espaços, aspas e caracteres invisíveis colados junto
+export function salvaCred(key, token) { lsSet(CRED_KEY, { key: limpa(key), token: limpa(token), desde: new Date().toISOString() }); }
 export function apagaCred() { lsDel(CRED_KEY); }
 export function temCred() { const c = cred(); return !!(c && c.key && c.token); }
 export function urlAutorizar(key, retorno) {

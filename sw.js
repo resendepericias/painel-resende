@@ -1,6 +1,6 @@
 /* Service worker — deixa o site abrir sem internet (a última carga boa fica no IndexedDB, o visual fica aqui).
    Estratégia: rede primeiro; se falhar, cache. O Trello e o Google nunca passam por aqui. */
-const V = "rpm-2026.09.25b";
+const V = "rpm-2026.09.25c";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "assets/css/app.css",
   "assets/js/app.js", "assets/js/config.js", "assets/js/util.js", "assets/js/parse.js", "assets/js/trello.js", "assets/js/regras.js", "assets/js/agenda.js",
   "assets/js/apresentacao.js", "assets/js/charts.js", "assets/js/ui.js",
@@ -18,6 +18,7 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const u = new URL(e.request.url);
   if (u.origin !== location.origin || e.request.method !== "GET") return;
-  e.respondWith(fetch(e.request).then(r => { if (r.ok && !u.pathname.includes("/data/")) caches.open(V).then(c => c.put(e.request, r.clone())); return r; })
+  /* cache:"no-cache" = confere com o servidor a cada abertura (ETag), para atualização chegar na hora e não em 10 min */
+  e.respondWith(fetch(e.request, { cache: "no-cache" }).then(r => { if (r.ok && !u.pathname.includes("/data/")) caches.open(V).then(c => c.put(e.request, r.clone())); return r; })
     .catch(() => caches.match(e.request, { ignoreSearch: true }).then(r => r || (e.request.mode === "navigate" ? caches.match("index.html") : Response.error()))));
 });
