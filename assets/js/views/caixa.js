@@ -18,6 +18,16 @@ export async function esvaziaFila(d) {
   lsSet(FILA, resto); return n;
 }
 
+/** Anota em qualquer tela: no Trello se der; senão guarda no aparelho. Devolve "trello" | "local" | "dev". */
+export async function anotar(d, texto, catNome, dev) {
+  const t = (texto || "").trim(); if (!t) return "";
+  const proc = cxProc(t);
+  if (dev) { d.laudos.push({ id: "dev-" + Date.now(), n: `[teste] ${catNome ? catNome + " — " : ""}${t}`, desc: t, u: "", l: "📝 CAIXA DO DIA", lid: (d.listas.laudos.find(l => /CAIXA DO DIA/i.test(l.name)) || {}).id, q: "laudos", at: new Date().toISOString(), lb: [] }); return "dev"; }
+  if (!temCred() || !navigator.onLine) { lsSet(FILA, [...filaLocal(), { t, catNome, proc, at: new Date().toISOString() }]); return "local"; }
+  try { const c = await anotaCaixa(d, t, catNome, proc); d.laudos.push(c); return "trello"; }
+  catch (e) { lsSet(FILA, [...filaLocal(), { t, catNome, proc, at: new Date().toISOString() }]); return "local"; }
+}
+
 export function render(el, d, { rerender, dev }) {
   const { pend, ok, lista } = cardsCaixa(d);
   const fila = filaLocal();
@@ -54,13 +64,10 @@ export function render(el, d, { rerender, dev }) {
 
   async function anota() {
     const t = (st.draft || "").trim(); if (!t) return;
-    const cat = CX_CATS.find(x => x[0] === st.cat); const catNome = cat ? cat[1] : ""; const proc = cxProc(t);
-    st.erro = "";
-    if (dev) { d.laudos.push({ id: "dev-" + Date.now(), n: `[teste] ${catNome ? catNome + " — " : ""}${t}`, desc: t, u: "", l: "📝 CAIXA DO DIA", lid: (d.listas.laudos.find(l => /CAIXA DO DIA/i.test(l.name)) || {}).id, q: "laudos", at: new Date().toISOString(), lb: [] }); st.draft = ""; st.cat = ""; rerender(); return; }
-    if (!temCred() || !navigator.onLine) { lsSet(FILA, [...filaLocal(), { t, catNome, proc, at: new Date().toISOString() }]); st.draft = ""; st.cat = ""; rerender(); return; }
-    st.enviando = true; rerender();
-    try { const c = await anotaCaixa(d, t, catNome, proc); d.laudos.push(c); st.draft = ""; st.cat = ""; }
-    catch (e) { lsSet(FILA, [...filaLocal(), { t, catNome, proc, at: new Date().toISOString() }]); st.erro = "Trello não respondeu — guardei neste aparelho"; st.draft = ""; }
-    st.enviando = false; rerender();
+    const cat = CX_CATS.find(x => x[0] === st.cat); const catNome = cat ? cat[1] : "";
+    st.erro = ""; st.enviando = true; rerender();
+    const modo = await anotar(d, t, catNome, dev);
+    if (modo === "local" && temCred() && navigator.onLine) st.erro = "Trello não respondeu — guardei neste aparelho";
+    st.draft = ""; st.cat = ""; st.enviando = false; rerender();
   }
 }

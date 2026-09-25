@@ -75,6 +75,8 @@ export const CX_CATS = [
 
 /* Links de consulta pública (sem número embutido — o site copia o número para a área de transferência) */
 export const CONSULTA = {
+  pjeHome:   "https://pje.tjmg.jus.br/pje/login.seam",          // entrada do PJe 1º grau (TJMG)
+  eprocHome: "https://eproc1g.tjmg.jus.br/eproc/",               // entrada do eproc 1º grau (TJMG)
   pje:   "https://pje-consulta-publica.tjmg.jus.br/",
   eproc: "https://eproc1g.tjmg.jus.br/eproc/externo_controlador.php?acao=processo_consulta_publica",
 };

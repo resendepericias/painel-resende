@@ -63,7 +63,7 @@ function mostra() {
 function renderAba(aba, forca = false) {
   const el = document.getElementById("s-" + aba); if (!el) return;
   if (!forca && el.dataset.ok === DADOS.at + "|" + APRES.on + "|" + AGENDA.at && !sujo.has(aba)) return;
-  VIEWS[aba].render(el, DADOS, { rerender: () => { sujo.add(aba); renderAba(aba, true); pintaTabs(); }, recarrega, dev: DEV, agendaInfo: AGENDA });
+  VIEWS[aba].render(el, DADOS, { rerender: () => { sujo.add(aba); renderAba(aba, true); pintaTabs(); }, recarrega, dev: DEV, agendaInfo: AGENDA, toast });
   el.dataset.ok = DADOS.at + "|" + APRES.on + "|" + AGENDA.at; sujo.delete(aba);
   animaNumeros(el);
 }

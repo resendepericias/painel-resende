@@ -4,12 +4,13 @@ import { comarcaDe, comarcaBonita, procKey, processoDe, horaDe } from "../parse.
 import { filas, vencidos, doDia, periciasDe, eventosDe, lembretes, lembretesAtrasados, horaEv, ehPlantao, ehPericiaEv, urg, TIPOS } from "../regras.js";
 import { rowHTML, miniHTML, tile, chip, vazio, secao, pulsoSVG } from "../ui.js";
 import { T } from "../apresentacao.js";
+import { anotar } from "./caixa.js";
 
 const ORDEM = ["laudo", "imp", "intim", "agenda"];
 const chipTipo = (t, nome) => `<span class="chip tipo-${t}">${ico(TIPOS[t].icone)} ${esc(nome || TIPOS[t].nome)}</span>`;
 const porData = (a, b) => (a.due || "9999") < (b.due || "9999") ? -1 : 1;
 
-export function render(el, d) {
+export function render(el, d, ctx = {}) {
   const hoje = HOJE(), F = filas(d);
   const perHoje = periciasDe(d, hoje), evHoje = eventosDe(d, hoje), plantao = evHoje.filter(e => ehPlantao(e.t));
   const lemb = lembretes(d, 7), lembAtr = lembretesAtrasados(d);
@@ -28,6 +29,12 @@ export function render(el, d) {
       ${tile("agendar", "warn", F.agenda.length, "agendamentos pendentes", "calendario")}
       ${tile("hoje", "info", lemb.length + lembAtr.length, "lembretes", "notificacao")}
     </div>
+    <form class="capa-caixa" id="cxRapido" autocomplete="off">
+      ${ico("comentario")}
+      <input id="cxRapidoTxt" placeholder="Caixa do dia: anote o que você já fez (laudo entregue, peticionei, perícia feita…) e aperte Enter" aria-label="Anotar na caixa do dia">
+      <button class="btn pri" type="submit">Anotar</button>
+      <a href="#caixa" class="hint">abrir a caixa →</a>
+    </form>
   </div>`;
 
   /* ---- LEMBRETES (Google Agenda: "Lembrete:" no título) ---- */
@@ -80,4 +87,12 @@ export function render(el, d) {
     ${bloco("agenda", F.agenda, "Intimação para designar data, prazo de agendamento vencido e varas para ligar.")}
   </div>`;
   el.innerHTML = html;
+  /* caixa rápida da capa: mesma regra da aba Caixa do dia */
+  const f = el.querySelector("#cxRapido");
+  f.onsubmit = async ev => {
+    ev.preventDefault(); const inp = f.querySelector("#cxRapidoTxt"), t = inp.value.trim(); if (!t) return;
+    inp.disabled = true; const modo = await anotar(d, t, "", ctx.dev); inp.disabled = false; inp.value = "";
+    if (ctx.toast) ctx.toast(modo === "trello" ? "anotado no Trello — a rodada das 8h aplica" : modo === "dev" ? "anotado (teste)" : "sem Trello agora — guardei neste aparelho");
+    if (ctx.rerender) ctx.rerender();
+  };
 }

@@ -86,8 +86,10 @@ export async function fichaHTML(d, key, idx) {
   /* links */
   const l = [...links.pje.map(u => ["PJe", u]), ...links.eproc.map(u => ["eproc", u])];
   h += `<section class="fs"><h3>${ico("seta")} Links</h3><div class="links">${l.map(([n, u]) => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">${esc(n)}: abrir o processo</a>`).join("")}
-    <a class="btn" href="${CONSULTA.pje}" target="_blank" rel="noopener" data-copiar="${esc(e.proc)}">consulta pública PJe (copia o número)</a>
-    <a class="btn" href="${CONSULTA.eproc}" target="_blank" rel="noopener" data-copiar="${esc(e.proc)}">consulta pública eproc (copia o número)</a>
+    <a class="btn" href="${CONSULTA.pjeHome}" target="_blank" rel="noopener" data-copiar="${esc(e.proc)}">${ico("cadeado")} entrar no PJe (copia o número)</a>
+    <a class="btn" href="${CONSULTA.eprocHome}" target="_blank" rel="noopener" data-copiar="${esc(e.proc)}">${ico("cadeado")} entrar no eproc (copia o número)</a>
+    <a class="btn sec" href="${CONSULTA.pje}" target="_blank" rel="noopener" data-copiar="${esc(e.proc)}">consulta pública PJe</a>
+    <a class="btn sec" href="${CONSULTA.eproc}" target="_blank" rel="noopener" data-copiar="${esc(e.proc)}">consulta pública eproc</a>
     ${cards.map(c => `<a class="btn sec" href="${esc(c.u)}" target="_blank" rel="noopener">Trello · ${esc(quadroNome(c.q).split(" ")[0])}</a>`).join("")}</div></section>`;
 
   /* tudo o que está escrito nos cards */
