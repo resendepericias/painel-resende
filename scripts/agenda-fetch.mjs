@@ -1,4 +1,4 @@
-/* Robô da agenda — roda no GitHub Actions (gratuito) a cada 30 min.
+/* Robô da agenda — roda no GitHub Actions (gratuito) três vezes ao dia (6h, 12h e 18h de Brasília), ou na hora pelo botão "Run workflow".
    Lê o endereço iCal secreto do Google Agenda (segredo ICS_URL), expande recorrências numa janela de -30 a +120 dias,
    criptografa com a senha da agenda (segredo AGENDA_SENHA, AES-256-GCM + PBKDF2) e grava data/agenda.enc.json.
    No site, só quem tem a senha lê. Nada da agenda fica legível no repositório. */

@@ -1,5 +1,5 @@
 /* Google Agenda (primedufop@gmail.com) — o navegador não consegue ler o endereço iCal do Google direto (sem CORS).
-   Um robô gratuito do GitHub lê o iCal a cada 30 min, criptografa com a senha da agenda e publica data/agenda.enc.json.
+   Um robô gratuito do GitHub lê o iCal três vezes ao dia (6h, 12h, 18h), criptografa com a senha da agenda e publica data/agenda.enc.json.
    Aqui o site baixa esse arquivo e descriptografa com a senha guardada só neste aparelho. */
 import { APP } from "./config.js";
 import { lsGet, lsSet, lsDel, kvGet, kvSet } from "./util.js";

@@ -20,7 +20,7 @@ export function render(el, d, { rerender, recarrega, agendaInfo }) {
   </section>
   <section class="card">
     <h2>${ico("calendario")} Google Agenda — senha da agenda</h2>
-    <div class="note">O navegador não consegue ler o endereço iCal do Google direto. Um robô gratuito do GitHub lê a agenda a cada 30 minutos, criptografa com uma senha e publica o arquivo cifrado junto do site. Aqui você informa a mesma senha (guardada só neste aparelho) para o site decifrar. Sem a senha, o site funciona normalmente, só sem agenda e sem lembretes.</div>
+    <div class="note">O navegador não consegue ler o endereço iCal do Google direto. Um robô gratuito do GitHub lê a agenda três vezes ao dia (6h, 12h e 18h), criptografa com uma senha e publica o arquivo cifrado junto do site. Aqui você informa a mesma senha (guardada só neste aparelho) para o site decifrar. Sem a senha, o site funciona normalmente, só sem agenda e sem lembretes.</div>
     <input id="cfgAgenda" type="password" placeholder="senha da agenda (a mesma cadastrada no GitHub)" value="${esc(senhaAgenda())}" autocomplete="off">
     <div class="cx-acts"><button class="btn pri" id="cfgAgendaSalvar">Salvar senha da agenda</button><span class="hint">${agendaInfo && agendaInfo.erro ? esc(agendaInfo.erro) : agendaInfo && agendaInfo.at ? "agenda lida em " + new Date(agendaInfo.at).toLocaleString("pt-BR") : ""}</span></div>
   </section>

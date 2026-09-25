@@ -17,7 +17,7 @@ Painel pessoal da Priscila Resende, com a identidade visual da Resende Perícias
 | Fonte | Caminho | Onde fica a credencial |
 |---|---|---|
 | Trello (4 quadros) | navegador → `api.trello.com` (CORS liberado pelo Trello) | chave + token no `localStorage` do aparelho |
-| Google Agenda | GitHub Actions lê o iCal secreto a cada 30 min → cifra (AES-256-GCM) → `data/agenda.enc.json` | senha da agenda no `localStorage`; a mesma senha no segredo `AGENDA_SENHA` do repositório |
+| Google Agenda | GitHub Actions lê o iCal secreto 3× ao dia (6h, 12h, 18h) → cifra (AES-256-GCM) → `data/agenda.enc.json` | senha da agenda no `localStorage`; a mesma senha no segredo `AGENDA_SENHA` do repositório |
 
 Nenhum nome de periciado nem número de processo fica guardado no site: o repositório só tem a casca (visual e código) e a agenda cifrada.
 
@@ -65,6 +65,8 @@ dev/                       dados de teste — NÃO vai para o git (contém nomes
 6. Abrir o site → Configuração: chave do Trello (power-ups/admin), Autorizar, senha da agenda. Repetir no celular. Adicionar à tela de início.
 
 Depois disso, cada ajuste é `scripts/publicar.sh "o que mudou"`.
+
+A agenda é lida 3× ao dia. Para ler agora: GitHub → Actions → *agenda* → *Run workflow*. Para mudar a frequência, editar o `cron` em `.github/workflows/agenda.yml` (horários em UTC; Brasília = UTC−3).
 
 ## Caixa do dia — protocolo da rodada das 8h
 

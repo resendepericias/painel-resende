@@ -1,9 +1,10 @@
 name: agenda
-# Robô gratuito: lê o Google Agenda (iCal secreto) a cada 30 min, criptografa e publica data/agenda.enc.json.
+# Robô gratuito: lê o Google Agenda (iCal secreto) três vezes ao dia (6h, 12h e 18h de Brasília = 9, 15 e 21 UTC),
+# criptografa e publica data/agenda.enc.json. "Run workflow" roda na hora.
 # Segredos necessários (Settings → Secrets and variables → Actions): ICS_URL e AGENDA_SENHA.
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 9,15,21 * * *"
   workflow_dispatch: {}
 permissions:
   contents: write
