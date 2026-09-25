@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel Resende</title>
+<meta name="description" content="Painel de perícias — Resende Perícias Médicas. Dados ao vivo do Trello e do Google Agenda.">
+<meta name="theme-color" content="#141A29">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Painel Resende">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/brand/icone-app.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/brand/icone-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<header class="topo">
+  <div class="topo-in">
+    <a class="marca" href="#hoje" title="Resende Perícias Médicas"><img class="logo-escuro" src="assets/brand/logo-horizontal.svg" alt="Resende Perícias Médicas"><img class="logo-claro" src="assets/brand/logo-horizontal-claro.svg" alt="Resende Perícias Médicas"></a>
+    <div class="busca">
+      <span class="ico busca-ico" data-ico="lupa" aria-hidden="true"></span>
+      <input id="busca" type="search" placeholder="processo (com ou sem pontuação) ou periciado…" autocomplete="off" spellcheck="false" aria-label="Buscar processo">
+      <div id="buscaRes" class="busca-res" hidden></div>
+    </div>
+    <div class="acoes">
+      <span class="stamp" title="quando os dados foram lidos do Trello"><i id="liveDot"></i><span id="stampTxt">—</span><small id="agendaStamp"></small></span>
+      <button id="btnRefresh" class="tb" title="atualizar agora"><span class="ico" data-ico="seta"></span></button>
+      <button id="btnApres" class="tb" title="modo apresentação — esconde nomes e números"><span class="ico" data-ico="escudo"></span></button>
+      <button id="btnTema" class="tb" title="tema claro / escuro"><span class="ico" data-ico="like"></span></button>
+      <a href="#config" class="tb" title="configuração"><span class="ico" data-ico="cadeado"></span></a>
+    </div>
+  </div>
+  <nav id="tabs" aria-label="Abas"></nav>
+</header>
+<div id="aviso" class="aviso" hidden></div>
+<main>
+  <section class="aba" id="s-hoje"></section>
+  <section class="aba" id="s-caixa"></section>
+  <section class="aba" id="s-laudos"></section>
+  <section class="aba" id="s-imp"></section>
+  <section class="aba" id="s-agendar"></section>
+  <section class="aba" id="s-pje"></section>
+  <section class="aba" id="s-cobranca"></section>
+  <section class="aba" id="s-visao"></section>
+  <section class="aba" id="s-config"></section>
+</main>
+<footer><img src="assets/brand/tipografia.svg" alt="" class="rodape-logo"><span>Resende Perícias Médicas · painel pessoal · dados ao vivo do Trello e do Google Agenda</span></footer>
+<div id="ficha" class="ficha" hidden></div>
+<div id="tip" class="tip" hidden></div>
+<div id="toast" class="toast" hidden></div>
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

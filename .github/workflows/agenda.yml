@@ -1,0 +1,29 @@
+name: agenda
+# Robô gratuito: lê o Google Agenda (iCal secreto) a cada 30 min, criptografa e publica data/agenda.enc.json.
+# Segredos necessários (Settings → Secrets and variables → Actions): ICS_URL e AGENDA_SENHA.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency: agenda
+jobs:
+  agenda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: ler e cifrar a agenda
+        env:
+          ICS_URL: ${{ secrets.ICS_URL }}
+          AGENDA_SENHA: ${{ secrets.AGENDA_SENHA }}
+        run: node scripts/agenda-fetch.mjs
+      - name: publicar se mudou
+        run: |
+          git config user.name "robo-agenda"
+          git config user.email "robo-agenda@users.noreply.github.com"
+          git add data/agenda.enc.json
+          git diff --cached --quiet && echo "sem mudança" || (git commit -m "agenda: atualização automática" && git push)
