@@ -68,7 +68,11 @@ export function filas(d) {
   const entregues = new Set(d.financas.map(procKey).filter(Boolean));
   const uniq = arr => { const vis = new Set(), out = []; for (const c of arr) { const k = procKey(c) || c.n; if (vis.has(k)) continue; vis.add(k); out.push(c); } return out; };
   const pend = pendentes(d);
-  const laudoPainel = pend.map(c => Object.assign({}, c, { tipo: "laudo" }));
+  /* prazo do quadro PJE completa o card do PAINEL que está sem data: sem isso, laudo com intimação vencida
+     (ex.: card de tema sem due e prazo só no card do PJe) não aparecia como atrasado. Vale o prazo mais cedo. */
+  const prazoPje = new Map();
+  for (const c of d.pje) { if (!L.pjeLaudo.test(c.l) || !c.due) continue; const k = procKey(c); if (!k) continue; if (!prazoPje.has(k) || c.due < prazoPje.get(k)) prazoPje.set(k, c.due); }
+  const laudoPainel = pend.map(c => { const o = Object.assign({}, c, { tipo: "laudo" }); const k = procKey(c); if (!o.due && k && prazoPje.has(k)) { o.due = prazoPje.get(k); o.dueDoPje = true; } return o; });
   const kPainel = new Set(laudoPainel.map(procKey).filter(Boolean));
   /* prazo de laudo vencido que só existe no quadro PJE — entra na fila marcado "só no PJe — conferir" */
   const soPje = d.pje.filter(c => L.pjeLaudo.test(c.l) && c.due && c.due < hoje && procKey(c) && !kPainel.has(procKey(c)) && !entregues.has(procKey(c)))

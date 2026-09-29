@@ -37,7 +37,7 @@ export function rowHTML(c, opts = {}) {
   const tema = opts.tema ? chip(opts.tema) : "";
   const v = c.v !== undefined ? c.v : valorDe(c);
   const val = v ? chip(money(v), "ok") : "";
-  const extra = (c.soPje ? chip("só no PJe — conferir", "warn") : "") + (opts.extra || "");
+  const extra = (c.soPje ? chip("só no PJe — conferir", "warn") : "") + (c.dueDoPje ? chip("prazo do PJe", "info") : "") + (opts.extra || "");
   const k = procKey(c);
   return `<div class="row ${sev}${k ? " clk" : ""}" ${k ? `data-ficha="${k}"` : ""}>
     <div class="date">${d}${sub}</div>
