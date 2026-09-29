@@ -15,7 +15,7 @@ export function render(el, d) {
   const coms = [...new Set(pend.map(comarcaDe))].sort();
   const listasExtra = [...new Set(pend.filter(c => !TEMAS.includes(c.l)).map(c => c.l))].filter(Boolean);
   const travado = pend.reduce((s, c) => s + (valorDe(c) || 0), 0);
-  el.innerHTML = `<div class="note">Só laudo a escrever: listas de tema + 🎯 HOJE + filas ENTREGAR + 🖊️ PERÍCIA FEITA + prazo de laudo vencido que só aparece no quadro PJe (marcado “só no PJe — conferir”). Complementar e impugnação têm aba própria e não entram nesta conta.</div>
+  el.innerHTML = `<div class="note">Só laudo a escrever: listas de tema + 🎯 HOJE + filas ENTREGAR + 🖊️ PERÍCIA FEITA + todo prazo de laudo do quadro PJe cujo processo não está na fila (marcado “só no PJe — conferir”, ou “consta entregue — conferir” quando o card está no FINANÇAS). Complementar e impugnação têm aba própria e não entram nesta conta.</div>
   <section class="card">
     <h2>${ico("documento")} Fila de laudos — por prazo <span class="chip">${pend.length}</span> <span class="chip ok">${money(travado)} travado</span></h2>
     <div class="filters">

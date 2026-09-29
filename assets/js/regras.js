@@ -68,17 +68,23 @@ export function filas(d) {
   const entregues = new Set(d.financas.map(procKey).filter(Boolean));
   const uniq = arr => { const vis = new Set(), out = []; for (const c of arr) { const k = procKey(c) || c.n; if (vis.has(k)) continue; vis.add(k); out.push(c); } return out; };
   const pend = pendentes(d);
-  /* prazo do quadro PJE completa o card do PAINEL que está sem data: sem isso, laudo com intimação vencida
-     (ex.: card de tema sem due e prazo só no card do PJe) não aparecia como atrasado. Vale o prazo mais cedo. */
-  const prazoPje = new Map();
-  for (const c of d.pje) { if (!L.pjeLaudo.test(c.l) || !c.due) continue; const k = procKey(c); if (!k) continue; if (!prazoPje.has(k) || c.due < prazoPje.get(k)) prazoPje.set(k, c.due); }
-  const laudoPainel = pend.map(c => { const o = Object.assign({}, c, { tipo: "laudo" }); const k = procKey(c); if (!o.due && k && prazoPje.has(k)) { o.due = prazoPje.get(k); o.dueDoPje = true; } return o; });
+  /* PRAZO DO PJE NUNCA SE PERDE (29/09/2026 — ela achou laudos atrasados no quadro PJE que o painel não mostrava).
+     1) Card do PAINEL sem data ou com data mais tarde que a do PJe: vale o prazo MAIS CEDO dos dois.
+     2) Prazo de laudo do PJe cujo processo não está na fila do PAINEL entra na fila — vencido OU a vencer —
+        marcado "só no PJe — conferir". Se o card está no FINANÇAS como entregue, entra do mesmo jeito,
+        marcado "consta entregue — conferir": ou o laudo não foi protocolado, ou o card do PJe não foi baixado.
+        Esconder era o erro: 5019479-14 (Ipatinga), 5004784-15 (Abre Campo) e 5016007-15 (sob pena de desabilitação) sumiam assim.
+     3) O mesmo vale para complementar/impugnação: o prazo do card 💬 do PJe completa o card ⚠️ do PAINEL. */
+  const menorPrazo = re => { const m = new Map(); for (const c of d.pje) { if (!re.test(c.l) || !c.due) continue; const k = procKey(c); if (!k) continue; if (!m.has(k) || c.due < m.get(k)) m.set(k, c.due); } return m; };
+  const completa = (c, m, tipo) => { const o = Object.assign({}, c, { tipo }); const k = procKey(c); const p = k && m.get(k); if (p && (!o.due || p < o.due)) { o.duePainel = o.due; o.due = p; o.dueDoPje = true; } return o; };
+  const prazoPje = menorPrazo(L.pjeLaudo);
+  const laudoPainel = pend.map(c => completa(c, prazoPje, "laudo"));
   const kPainel = new Set(laudoPainel.map(procKey).filter(Boolean));
-  /* prazo de laudo vencido que só existe no quadro PJE — entra na fila marcado "só no PJe — conferir" */
-  const soPje = d.pje.filter(c => L.pjeLaudo.test(c.l) && c.due && c.due < hoje && procKey(c) && !kPainel.has(procKey(c)) && !entregues.has(procKey(c)))
-    .map(c => Object.assign({}, c, { tipo: "laudo", soPje: true }));
+  const soPje = d.pje.filter(c => L.pjeLaudo.test(c.l) && c.due && procKey(c) && !kPainel.has(procKey(c)))
+    .map(c => Object.assign({}, c, { tipo: "laudo", soPje: true, constaEntregue: entregues.has(procKey(c)) }));
   const laudo = uniq([...laudoPainel, ...soPje]);
-  const imp = uniq([...d.laudos.filter(ehImp), ...d.pje.filter(c => L.pjeEsc.test(c.l))]).map(c => Object.assign({}, c, { tipo: "imp" }));
+  const prazoEsc = menorPrazo(L.pjeEsc);
+  const imp = uniq([...d.laudos.filter(ehImp).map(c => completa(c, prazoEsc, "imp")), ...d.pje.filter(c => L.pjeEsc.test(c.l)).map(c => Object.assign({}, c, { tipo: "imp" }))]);
   const agenda = uniq([...d.pje.filter(c => L.pjeAg.test(c.l)),
     ...d.processos.filter(c => L.aceitas.test(c.l) && prazoAgendar(c)),
     ...d.processos.filter(c => L.ligar.test(c.l) && procKey(c))]).map(c => Object.assign({}, c, { tipo: "agenda" }));

@@ -52,7 +52,7 @@ export function render(el, d, ctx = {}) {
   ];
   html += `<section class="card"><h2>${ico("pulso")} Hoje</h2><div class="grade2">
     <div><h3>Perícias e agenda</h3>${agendaHoje.join("") || vazio("agenda livre — dia bom para escrever laudo")}</div>
-    <div><h3>Vence hoje</h3>${hojeItens.length ? hojeItens.map(({ t, c }) => miniHTML({ hora: "", texto: c.n, meta: chipTipo(t) + (c.soPje ? chip("só no PJe", "warn") : ""), url: c.u, key: procKey(c) })).join("") : vazio("nada vence hoje")}</div>
+    <div><h3>Vence hoje</h3>${hojeItens.length ? hojeItens.map(({ t, c }) => miniHTML({ hora: "", texto: c.n, meta: chipTipo(t) + (c.constaEntregue ? chip("consta entregue — conferir", "crit") : c.soPje ? chip("só no PJe", "warn") : ""), url: c.u, key: procKey(c) })).join("") : vazio("nada vence hoje")}</div>
   </div></section>`;
 
   /* ---- PRÓXIMOS 7 DIAS ---- */
@@ -77,7 +77,7 @@ export function render(el, d, ctx = {}) {
     return `<section class="bloco ${Tt.cls}"><h3>${ico(Tt.icone)} ${Tt.nome} <span class="n">${arr.length}</span>${v.length ? ` <span class="n vv">${v.length} ${t === "laudo" ? "atrasados" : "vencidas"}</span>` : ""}</h3>
       <div class="legend">${sub}</div>
       ${lista.slice(0, 8).map(c => miniHTML({ hora: c.due ? brDate(c.due) : "s/ prazo", texto: c.n, url: c.u, key: procKey(c), cls: c.due && c.due < hoje ? "crit" : "",
-        meta: `${c.due && c.due < hoje ? chip(`${-diasAte(c.due)} dias`, "crit") : ""}${urg(c) ? chip("URGENTÍSSIMO", "urg") : ""}${c.soPje ? chip("só no PJe — conferir", "warn") : ""}${c.dueDoPje ? chip("prazo do PJe", "info") : ""}${chip(comarcaBonita(comarcaDe(c)))}` })).join("") || vazio("nada pendente")}
+        meta: `${c.due && c.due < hoje ? chip(`${-diasAte(c.due)} dias`, "crit") : ""}${urg(c) ? chip("URGENTÍSSIMO", "urg") : ""}${c.constaEntregue ? chip("consta entregue no FINANÇAS — conferir", "crit") : c.soPje ? chip("só no PJe — conferir", "warn") : ""}${c.dueDoPje ? chip("prazo do PJe", "info") : ""}${chip(comarcaBonita(comarcaDe(c)))}` })).join("") || vazio("nada pendente")}
       ${lista.length > 8 ? `<button class="mais" data-go="${Tt.aba}">ver todos os ${lista.length} →</button>` : ""}</section>`;
   };
   html += `<h2 class="sec">Pendências — separadas por tipo</h2><div class="blocos">
