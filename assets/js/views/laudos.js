@@ -2,17 +2,20 @@
 import { TEMAS } from "../config.js";
 import { esc, HOJE, diasAte, ico, money } from "../util.js";
 import { comarcaDe, comarcaBonita, valorDe } from "../parse.js";
-import { pendentes, ehFeita, ehTriado, urg } from "../regras.js";
+import { filas, ehFeita, ehTriado, urg } from "../regras.js";
 import { rowHTML, vazio } from "../ui.js";
 
 const fl = { stat: "todos", com: "todas", tema: "todos", q: "" };
 
 export function render(el, d) {
-  const hoje = HOJE(), pend = pendentes(d);
+  const hoje = HOJE(), pend = filas(d).laudo; /* mesma fila da capa: inclui prazo de laudo vencido que só existe no quadro PJe */
+  /* atalho vindo do número da capa: #laudos/atrasado abre já filtrado */
+  const arg = (location.hash.split("/")[1] || "");
+  if (["atrasado", "vence7", "futuro", "semprazo", "urg"].includes(arg)) { fl.stat = arg; fl.com = "todas"; fl.tema = "todos"; fl.q = ""; }
   const coms = [...new Set(pend.map(comarcaDe))].sort();
-  const listasExtra = [...new Set(pend.filter(c => !TEMAS.includes(c.l)).map(c => c.l))];
+  const listasExtra = [...new Set(pend.filter(c => !TEMAS.includes(c.l)).map(c => c.l))].filter(Boolean);
   const travado = pend.reduce((s, c) => s + (valorDe(c) || 0), 0);
-  el.innerHTML = `<div class="note">Só laudo a escrever: listas de tema + 🎯 HOJE + filas ENTREGAR + 🖊️ PERÍCIA FEITA. Complementar e impugnação têm aba própria e não entram nesta conta.</div>
+  el.innerHTML = `<div class="note">Só laudo a escrever: listas de tema + 🎯 HOJE + filas ENTREGAR + 🖊️ PERÍCIA FEITA + prazo de laudo vencido que só aparece no quadro PJe (marcado “só no PJe — conferir”). Complementar e impugnação têm aba própria e não entram nesta conta.</div>
   <section class="card">
     <h2>${ico("documento")} Fila de laudos — por prazo <span class="chip">${pend.length}</span> <span class="chip ok">${money(travado)} travado</span></h2>
     <div class="filters">

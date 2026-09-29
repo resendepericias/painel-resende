@@ -29,7 +29,7 @@ export function render(el, d) {
   const colPrazo = mFut.map(m => ({ label: rotMes(m), value: F.laudo.filter(c => c.due && c.due >= hoje && c.due.slice(0, 7) === m).length, cor: "var(--warn)" }));
 
   let html = `<div class="tiles">
-    ${tile("laudos", "crit", atras.length, "laudos atrasados", "documento")}
+    ${tile("laudos/atrasado", "crit", atras.length, "laudos atrasados", "documento")}
     ${tile("laudos", "warn", sem7.length, "vencem em 7 dias", "relogio")}
     ${tile("laudos", "warn", semPrazo.length, "sem prazo — conferir PJe", "lupa")}
     ${tile("pje", "crit", pjeVenc.length, "intimações vencidas (não é laudo)", "prancheta")}

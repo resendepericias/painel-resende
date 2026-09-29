@@ -23,7 +23,7 @@ export function render(el, d, ctx = {}) {
         ${plantao.length ? ` · <b>plantão: ${esc(plantao.map(e => e.t).join(", "))}</b> — dia curto para laudo` : ""}</div></div>
     </div>
     <div class="tiles">
-      ${tile("laudos", "crit", vencidos(F.laudo).length, "laudos atrasados", "documento")}
+      ${tile("laudos/atrasado", "crit", vencidos(F.laudo).length, "laudos atrasados", "documento")}
       ${tile("imp", "acc", F.imp.length, "complementar / impugnação", "comentario")}
       ${tile("pje", "warn", vencidos(F.intim).length, "intimações vencidas", "prancheta")}
       ${tile("agendar", "warn", F.agenda.length, "agendamentos pendentes", "calendario")}

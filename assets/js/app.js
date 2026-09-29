@@ -29,7 +29,7 @@ const sujo = new Set();
 const ABAS = [
   ["hoje", "Hoje", "pulso", null],
   ["caixa", "Caixa do dia", "comentario", d => cardsCaixa(d).pend.length],
-  ["laudos", "Laudo a fazer", "documento", d => pendentes(d).length],
+  ["laudos", "Laudo a fazer", "documento", d => filas(d).laudo.length],
   ["imp", "Complementar / impugnação", "notificacao", d => filas(d).imp.length],
   ["agendar", "Agendar", "calendario", d => aceitas(d).length],
   ["pje", "PJe / eproc", "prancheta", d => pjePendentes(d).length],
@@ -56,7 +56,7 @@ function mostra() {
   document.querySelectorAll("main > section.aba").forEach(s => s.classList.toggle("act", s.id === "s-" + (VIEWS[aba] ? aba : "hoje")));
   if (aba === "ficha" && arg) { abreFicha(arg); return; }
   fechaFicha();
-  renderAba(VIEWS[aba] ? aba : "hoje");
+  renderAba(VIEWS[aba] ? aba : "hoje", !!arg);
   pintaTabs();
   window.scrollTo({ top: 0 });
 }
