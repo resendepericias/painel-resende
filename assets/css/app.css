@@ -302,3 +302,4 @@ main > section.aba.act > * { animation: sobe .38s cubic-bezier(.2,.7,.2,1) both;
 .capa-caixa .btn { padding: 7px 14px; border-radius: 999px; }
 .capa-caixa .hint { white-space: nowrap; }
 @media (max-width: 760px) { .capa-caixa { flex-wrap: wrap; border-radius: 16px; } .capa-caixa input { flex-basis: 100%; order: -1; } .capa-caixa > .ico { display: none; } }
+.txt-crit{color:var(--crit)}

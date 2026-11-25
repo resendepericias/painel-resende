@@ -5,7 +5,7 @@
 export const APP = {
   nome: "Resende Perícias Médicas",
   curto: "Painel Resende",
-  versao: "2026.09.29c",
+  versao: "2026.11.25a",
   tz: "America/Sao_Paulo",
   agendaUrl: "data/agenda.enc.json",
   intervaloMin: 5,          // minutos entre recargas automáticas do Trello

@@ -2,7 +2,7 @@
 import { APP } from "./config.js";
 import { esc, brDataHora, lsGet, lsSet, lsDel, ico, pintaIcones, debounce, HOJE } from "./util.js";
 import { temCred, cred, salvaCred, carregaQuadros, cargaConfiavel, cargaSalva, guardaCarga } from "./trello.js";
-import { sanearPrazos, filas, vencidos, pendentes, aceitas, pjePendentes, aCobrar } from "./regras.js";
+import { sanearPrazos, filas, vencidos, pendentes, pjePendentes, aCobrar, agendarReal, agendaMarcada } from "./regras.js";
 import { carregaAgenda } from "./agenda.js";
 import { APRES, ligaApres, indexaNomes, T } from "./apresentacao.js";
 import { cardsCaixa } from "./trello.js";
@@ -13,6 +13,7 @@ import * as vCaixa from "./views/caixa.js";
 import * as vLaudos from "./views/laudos.js";
 import * as vImp from "./views/imp.js";
 import * as vAgendar from "./views/agendar.js";
+import * as vPauta from "./views/pauta.js";
 import * as vPje from "./views/pje.js";
 import * as vCobranca from "./views/cobranca.js";
 import * as vVisao from "./views/visao.js";
@@ -31,12 +32,13 @@ const ABAS = [
   ["caixa", "Caixa do dia", "comentario", d => cardsCaixa(d).pend.length],
   ["laudos", "Laudo a fazer", "documento", d => filas(d).laudo.length],
   ["imp", "Complementar / impugnação", "notificacao", d => filas(d).imp.length],
-  ["agendar", "Agendar", "calendario", d => aceitas(d).length],
+  ["agendar", "Agendar", "calendario", d => agendarReal(d).fazer.length],
+  ["pauta", "Agenda", "relogio", d => agendaMarcada(d).length],
   ["pje", "PJe / eproc", "prancheta", d => pjePendentes(d).length],
   ["cobranca", "Cobrança", "trofeu", d => aCobrar(d).length],
   ["visao", "Visão geral", "lupa", null],
 ];
-const VIEWS = { hoje: vHoje, caixa: vCaixa, laudos: vLaudos, imp: vImp, agendar: vAgendar, pje: vPje, cobranca: vCobranca, visao: vVisao, config: vConfig };
+const VIEWS = { hoje: vHoje, caixa: vCaixa, laudos: vLaudos, imp: vImp, agendar: vAgendar, pauta: vPauta, pje: vPje, cobranca: vCobranca, visao: vVisao, config: vConfig };
 
 /* ---------- tema ---------- */
 document.documentElement.dataset.theme = lsGet("rpm.tema", "dark");

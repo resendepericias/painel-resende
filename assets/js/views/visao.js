@@ -2,7 +2,7 @@
 import { TEMAS, L } from "../config.js";
 import { esc, HOJE, diasAte, money, moneyCurto, MESES_CURTO, ico, somaDias } from "../util.js";
 import { comarcaDe, comarcaBonita, valorDe, entregueEm, dataPericia } from "../parse.js";
-import { pendentes, ehFeita, ehTriado, aceitas, agendadas, aCobrar, pjePendentes, prazoAgendar, urg, filas, vencidos } from "../regras.js";
+import { pendentes, ehFeita, ehTriado, aceitas, agendadas, agendarReal, agendaMarcada, aCobrar, pjePendentes, prazoAgendar, urg, filas, vencidos } from "../regras.js";
 import { rowHTML, tile, vazio } from "../ui.js";
 import { hbar, colunas, pilha, rosca, CAT } from "../charts.js";
 
@@ -10,14 +10,14 @@ function mesesRel(de, ate) { const out = []; const base = new Date(HOJE().slice(
 const rotMes = m => { const x = new Date(m + "-15T12:00:00"); return MESES_CURTO[x.getMonth()] + "/" + m.slice(2, 4); };
 
 export function render(el, d) {
-  const hoje = HOJE(), pend = pendentes(d), F = filas(d);
+  const hoje = HOJE(), F = filas(d), pend = F.laudo, R = agendarReal(d), marc = agendaMarcada(d);
   const atras = pend.filter(c => c.due && c.due < hoje), sem7 = pend.filter(c => c.due && c.due >= hoje && diasAte(c.due) <= 7), semPrazo = pend.filter(c => !c.due), urgs = pend.filter(urg);
   const feitas = d.laudos.filter(ehFeita), ac = aceitas(d), cob = aCobrar(d), cobTot = cob.reduce((s, c) => s + (valorDe(c) || 0), 0), travado = pend.reduce((s, c) => s + (valorDe(c) || 0), 0);
   const pjeP = pjePendentes(d), pjeVenc = pjeP.filter(c => !L.pjeLaudo.test(c.l) && c.due && c.due < hoje), pjeLaudoVenc = pjeP.filter(c => L.pjeLaudo.test(c.l) && c.due && c.due < hoje);
   const triado = pend.filter(ehTriado).length, aTriar = pend.filter(ehFeita).length;
 
   /* por tema */
-  const porTema = [...TEMAS.map(t => [t, d.laudos.filter(c => c.l === t).length]), ["Perícia feita — ainda sem tema", aTriar], ["Fila HOJE / ENTREGAR", pend.filter(c => !TEMAS.includes(c.l) && !ehFeita(c)).length]].filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+  const porTema = [...TEMAS.map(t => [t, d.laudos.filter(c => c.l === t).length]), ["Perícia feita — ainda sem tema", aTriar], ["Outras (HOJE/ENTREGAR, perícia realizada, só no PJe)", pend.filter(c => !TEMAS.includes(c.l) && !ehFeita(c)).length]].filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
   /* por comarca: laudos pendentes e a receber */
   const comPend = {}; pend.forEach(c => { const k = comarcaDe(c); comPend[k] = (comPend[k] || 0) + 1; });
   const comCob = {}; cob.forEach(c => { const k = comarcaDe(c); comCob[k] = (comCob[k] || 0) + (valorDe(c) || 0); });
@@ -35,8 +35,8 @@ export function render(el, d) {
     ${tile("pje", "crit", pjeVenc.length, "intimações vencidas (não é laudo)", "prancheta")}
     ${tile("pje", "warn", pjeLaudoVenc.length, "prazos de laudo vencidos no PJe", "notificacao")}
     ${tile("laudos", "info", feitas.length, "perícia feita → criar laudo", "pulso")}
-    ${tile("agendar", "crit", ac.filter(prazoAgendar).length, "prazo p/ agendar vencido", "calendario")}
-    ${tile("agendar", "acc", ac.length, "aceitas p/ agendar", "anexo")}
+    ${tile("agendar", "crit", R.fazer.length, "para agendar agora", "calendario")}
+    ${tile("pauta", "acc", marc.length, "perícias marcadas", "relogio")}
     ${tile("cobranca", "ok", moneyCurto(cobTot), `a receber (${cob.length} proc.)`, "trofeu")}
     ${tile("laudos", "info", moneyCurto(travado), "travado em laudos pendentes", "cadeado")}
   </div>`;
@@ -44,7 +44,7 @@ export function render(el, d) {
 
   html += `<div class="grade2">
     <section class="card"><h2>Laudos pendentes por tema</h2>${hbar(porTema.map(([t, n]) => ({ label: t, value: n })))}
-      <div class="legend"><b>Total: ${pend.length} laudos a fazer</b> = ${triado} triados por tema/fila · ${aTriar} de perícia feita ainda sem tema. Meta 7/dia → ~${Math.ceil(pend.length / 7)} dias úteis. Complementares e impugnações não entram aqui.${d.prazosAnulados ? `<br>${d.prazosAnulados} card(s) tinham a data da perícia no lugar do prazo — estão como “conferir”, não como atrasados.` : ""}</div></section>
+      <div class="legend"><b>Total: ${pend.length} laudos a fazer</b> = ${triado} triados por tema/fila · ${aTriar} de perícia feita ainda sem tema · ${pend.length - triado - aTriar} perícia realizada sem card de laudo ou prazo só no PJe. Meta 7/dia → ~${Math.ceil(pend.length / 7)} dias úteis. Complementares e impugnações não entram aqui.${d.prazosAnulados ? `<br>${d.prazosAnulados} card(s) tinham a data da perícia no lugar do prazo — estão como “conferir”, não como atrasados.` : ""}</div></section>
     <section class="card"><h2>Laudos pendentes por comarca</h2>${hbar(Object.entries(comPend).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, n]) => ({ label: comarcaBonita(k), value: n })))}</section>
     <section class="card"><h2>Laudos entregues por mês</h2>${colunas(colEnt)}<div class="legend">Contado pela data [ENTREGUE dd/mm/aaaa] dos cards de FINANÇAS.</div></section>
     <section class="card"><h2>Perícias marcadas por mês</h2>${colunas(colPer, { cor: CAT[1] })}</section>
@@ -53,7 +53,7 @@ export function render(el, d) {
     <section class="card"><h2>Situação das pendências</h2><div class="roscas">
       ${rosca([{ label: "atrasados", value: atras.length, cor: "var(--crit)" }, { label: "vencem em 7 dias", value: sem7.length, cor: "var(--warn)" }, { label: "prazo futuro", value: pend.length - atras.length - sem7.length - semPrazo.length, cor: "var(--ok)" }, { label: "sem prazo", value: semPrazo.length, cor: "var(--muted)" }], pend.length, "laudos")}
       ${rosca([{ label: "vencidas", value: pjeVenc.length + pjeLaudoVenc.length, cor: "var(--crit)" }, { label: "no prazo", value: pjeP.length - pjeVenc.length - pjeLaudoVenc.length, cor: "var(--cyan)" }], pjeP.length, "intimações")}
-      ${rosca([{ label: "agendadas", value: agendadas(d).length, cor: "var(--gold)" }, { label: "a agendar", value: ac.length, cor: "var(--muted)" }], agendadas(d).length + ac.length, "processos")}
+      ${rosca([{ label: "marcadas", value: marc.length, cor: "var(--gold)" }, { label: "agendar agora", value: R.fazer.length, cor: "var(--crit)" }, { label: "aguardam juízo / intimação", value: R.juizo.length + R.aguarda.length, cor: "var(--muted)" }], marc.length + R.fazer.length + R.juizo.length + R.aguarda.length, "processos")}
     </div></section>
     <section class="card"><h2>O caminho do card</h2><div class="note"><b>PROCESSOS</b> (aceite → agendada) → <b>PAINEL LAUDOS</b> (perícia feita → tema → entregue) → <b>FINANÇAS</b> (entregue → cobrado → ordem → pago). Se vier impugnação, volta ao PAINEL LAUDOS e depois retorna às finanças. É sempre o mesmo card andando de quadro em quadro — sem cópia e sem duplicata.</div></section>
   </div>`;

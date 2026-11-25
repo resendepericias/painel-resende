@@ -76,15 +76,15 @@ export function render(el, d, ctx = {}) {
     const lista = [...v, ...fut];
     return `<section class="bloco ${Tt.cls}"><h3>${ico(Tt.icone)} ${Tt.nome} <span class="n">${arr.length}</span>${v.length ? ` <span class="n vv">${v.length} ${t === "laudo" ? "atrasados" : "vencidas"}</span>` : ""}</h3>
       <div class="legend">${sub}</div>
-      ${lista.slice(0, 8).map(c => miniHTML({ hora: c.due ? brDate(c.due) : "s/ prazo", texto: c.n, url: c.u, key: procKey(c), cls: c.due && c.due < hoje ? "crit" : "",
+      ${lista.slice(0, 5).map(c => miniHTML({ hora: c.due ? brDate(c.due) : "s/ prazo", texto: c.n, url: c.u, key: procKey(c), cls: c.due && c.due < hoje ? "crit" : "",
         meta: `${c.due && c.due < hoje ? chip(`${-diasAte(c.due)} dias`, "crit") : ""}${urg(c) ? chip("URGENTÍSSIMO", "urg") : ""}${c.constaEntregue ? chip("consta entregue no FINANÇAS — conferir", "crit") : c.soPje ? chip("só no PJe — conferir", "warn") : ""}${c.dueDoPje ? chip("prazo do PJe", "info") : ""}${chip(comarcaBonita(comarcaDe(c)))}` })).join("") || vazio("nada pendente")}
-      ${lista.length > 8 ? `<button class="mais" data-go="${Tt.aba}">ver todos os ${lista.length} →</button>` : ""}</section>`;
+      ${lista.length > 5 ? `<button class="mais" data-go="${Tt.aba}">ver todos os ${lista.length} →</button>` : ""}</section>`;
   };
   html += `<h2 class="sec">Pendências — separadas por tipo</h2><div class="blocos">
-    ${bloco("laudo", F.laudo, "Atrasados primeiro. Inclui prazo de laudo vencido que só aparece no quadro PJe.")}
+    ${bloco("laudo", F.laudo, "Atrasados primeiro. Conta também perícia realizada que ainda não tem laudo, mesmo sem intimação.")}
     ${bloco("imp", F.imp, "Laudo já entregue; falta responder a impugnação ou o complementar.")}
     ${bloco("intim", F.intim, "Aceite, honorários, ciência, esclarecimento de rotina — resolve peticionando.")}
-    ${bloco("agenda", F.agenda, "Intimação para designar data, prazo de agendamento vencido e varas para ligar.")}
+    ${bloco("agenda", F.agenda, "Só o que você precisa agendar agora: intimação para designar e aceite com prazo. Já marcadas estão na aba Agenda.")}
   </div>`;
   el.innerHTML = html;
   /* caixa rápida da capa: mesma regra da aba Caixa do dia */

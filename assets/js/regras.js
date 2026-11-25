@@ -63,6 +63,53 @@ export const TIPOS = {
   intim:  { nome: "Resposta a intimação",    cls: "info", aba: "pje",     icone: "prancheta" },
   agenda: { nome: "Agendamento",             cls: "warn", aba: "agendar", icone: "calendario" },
 };
+/* ---- AGENDAR: número real (25/11/2026) ----
+   Ela reclamou que "Agendar" mostrava 117: contava TODA a lista de aceitas, inclusive perícia já marcada e
+   aceite que ainda espera o juízo mandar designar. A conta agora é só o que ELA tem de fazer:
+   intimação para designar (quadro PJE 📆 AGENDAR PERICIA) + aceita com prazo/intimação no título.
+   Aceita que já tem data (título [COMARCA-DD-MM-AA] ou processo na Google Agenda) vai para a aba Agenda;
+   aceita sem intimação e "aguarda juízo" aparecem fechadas, fora da conta. */
+const semAc = s => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+/** chaves de processo que aparecem em eventos FUTUROS da Google Agenda */
+export function chavesAgenda(d) {
+  const hoje = HOJE(), out = new Map();
+  for (const e of (d.agenda || [])) {
+    const dia = (e.d || "").slice(0, 10); if (dia < hoje) continue;
+    const t = (e.t || "") + " " + (e.loc || "");
+    for (const m of t.matchAll(/\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}|\b\d{20}\b/g)) { const k = m[0].replace(/\D/g, ""); if (!out.has(k)) out.set(k, e); }
+  }
+  return out;
+}
+/** classe de um card das listas ACEITAS: agendar | marcada | juizo | aguarda | cancelada */
+export function classeAceita(c, ag) {
+  const n = semAc(c.n), t = n + "\n" + semAc(c.desc);
+  if (/CANCELAD/.test(n)) return "cancelada";
+  if (dataPericia(c) && dataPericia(c) >= HOJE()) return "marcada";
+  if (ag && ag.has(procKey(c))) return "marcada";
+  if (/AGENDAR|INTIMADA|PRAZO PERDIDO|DECURSO|\[PRAZO [^\]]*(LAUDO|PROVIDENCIA)/.test(n) && !/ACEITE NO AJ/.test(n)) return "agendar";
+  if (/AGUARDA (INTIMACAO|DECISAO|O JUIZO|JUIZO|NOMEACAO|DESPACHO|CADASTR)|A DESIGNAR|NAO CADASTRADA|MAJORA|PROPOSTA DE HON|ACEITE NO AJ/.test(t)) return "juizo";
+  return "aguarda";
+}
+export function agendarReal(d) {
+  const ag = chavesAgenda(d), marcadas = new Set(agendadas(d).filter(c => dataPericia(c) >= HOJE()).map(procKey).filter(Boolean));
+  const grupos = { agendar: [], marcada: [], juizo: [], aguarda: [], cancelada: [] };
+  for (const c of aceitas(d)) grupos[marcadas.has(procKey(c)) ? "marcada" : classeAceita(c, ag)].push(c);
+  grupos.juizo.push(...d.processos.filter(c => L.juizo.test(c.l)));
+  const kAg = new Set([...grupos.marcada.map(procKey)]);
+  const pjeAg = d.pje.filter(c => L.pjeAg.test(c.l) && !kAg.has(procKey(c)));
+  const vis = new Set(), fazer = [];
+  for (const c of [...pjeAg, ...grupos.agendar]) { const k = procKey(c) || c.id; if (vis.has(k)) continue; vis.add(k); fazer.push(c); }
+  return { fazer, pjeAg, ...grupos, ag };
+}
+/** perícias marcadas (futuras): listas 🗓️ com data no título + aceitas já marcadas na agenda */
+export function agendaMarcada(d) {
+  const hoje = HOJE(), R = agendarReal(d);
+  const lista = agendadas(d).filter(c => dataPericia(c) >= hoje).map(c => ({ c, dia: dataPericia(c) }));
+  const k = new Set(lista.map(x => procKey(x.c)));
+  for (const c of R.marcada) { if (k.has(procKey(c))) continue; const e = R.ag.get(procKey(c)); lista.push({ c, dia: dataPericia(c) || (e ? e.d.slice(0, 10) : ""), soAgenda: !dataPericia(c) }); }
+  return lista.filter(x => x.dia).sort((a, b) => a.dia < b.dia ? -1 : 1);
+}
+
 export function filas(d) {
   const hoje = HOJE();
   const entregues = new Set(d.financas.map(procKey).filter(Boolean));
@@ -74,20 +121,27 @@ export function filas(d) {
         marcado "só no PJe — conferir". Se o card está no FINANÇAS como entregue, entra do mesmo jeito,
         marcado "consta entregue — conferir": ou o laudo não foi protocolado, ou o card do PJe não foi baixado.
         Esconder era o erro: 5019479-14 (Ipatinga), 5004784-15 (Abre Campo) e 5016007-15 (sob pena de desabilitação) sumiam assim.
-     3) O mesmo vale para complementar/impugnação: o prazo do card 💬 do PJe completa o card ⚠️ do PAINEL. */
-  const menorPrazo = re => { const m = new Map(); for (const c of d.pje) { if (!re.test(c.l) || !c.due) continue; const k = procKey(c); if (!k) continue; if (!m.has(k) || c.due < m.get(k)) m.set(k, c.due); } return m; };
-  const completa = (c, m, tipo) => { const o = Object.assign({}, c, { tipo }); const k = procKey(c); const p = k && m.get(k); if (p && (!o.due || p < o.due)) { o.duePainel = o.due; o.due = p; o.dueDoPje = true; } return o; };
-  const prazoPje = menorPrazo(L.pjeLaudo);
+     3) O mesmo vale para complementar/impugnação: o prazo do card 💬 do PJe completa o card ⚠️ do PAINEL.
+     4) (25/11/2026) Card de PRAZO DE LAUDO do PJe que é de laudo COMPLEMENTAR / quesitos vai para a fila de impugnação, não de laudo.
+     5) (25/11/2026) Perícia REALIZADA sem laudo conta como laudo a fazer mesmo sem intimação: card ainda numa lista
+        🗓️ AGENDADAS com data da perícia já passada (o card não foi movido para 🖊️ PERÍCIA FEITA). Marcado "perícia realizada — mover card". */
+  const ehCompl = c => /COMPLEMENTAR|QUESITOS? (SUPLEMENTARES|COMPLEMENTARES)|ESCLARECIMENTO/i.test(semAc(c.n));
+  const pjeLaudo = d.pje.filter(c => L.pjeLaudo.test(c.l) && !ehCompl(c));
+  const pjeCompl = d.pje.filter(c => L.pjeLaudo.test(c.l) && ehCompl(c));
+  const menorPrazo = arr => { const m = new Map(); for (const c of arr) { if (!c.due) continue; const k = procKey(c); if (!k) continue; if (!m.has(k) || c.due < m.get(k)) m.set(k, c.due); } return m; };
+  const completa = (c, m, tipo) => { const o = Object.assign({}, c, { tipo }); const k = procKey(c); const p = k && m.get(k); if (p && (!o.due || p < o.due)) { o.duePainel = o.due; o.due = p; o.dueDoPje = true; } if (p) o.temIntimacao = true; return o; };
+  const prazoPje = menorPrazo(pjeLaudo);
   const laudoPainel = pend.map(c => completa(c, prazoPje, "laudo"));
-  const kPainel = new Set(laudoPainel.map(procKey).filter(Boolean));
-  const soPje = d.pje.filter(c => L.pjeLaudo.test(c.l) && c.due && procKey(c) && !kPainel.has(procKey(c)))
-    .map(c => Object.assign({}, c, { tipo: "laudo", soPje: true, constaEntregue: entregues.has(procKey(c)) }));
-  const laudo = uniq([...laudoPainel, ...soPje]);
-  const prazoEsc = menorPrazo(L.pjeEsc);
-  const imp = uniq([...d.laudos.filter(ehImp).map(c => completa(c, prazoEsc, "imp")), ...d.pje.filter(c => L.pjeEsc.test(c.l)).map(c => Object.assign({}, c, { tipo: "imp" }))]);
-  const agenda = uniq([...d.pje.filter(c => L.pjeAg.test(c.l)),
-    ...d.processos.filter(c => L.aceitas.test(c.l) && prazoAgendar(c)),
-    ...d.processos.filter(c => L.ligar.test(c.l) && procKey(c))]).map(c => Object.assign({}, c, { tipo: "agenda" }));
+  const semLaudoK = new Set([...d.laudos.filter(c => L.naoComp.test(c.l) || L.faltou.test(c.l) || ehImp(c)), ...d.financas].map(procKey).filter(Boolean));
+  const realizadas = agendadas(d).filter(c => { const p = dataPericia(c); return p && p < hoje && !semLaudoK.has(procKey(c)); })
+    .map(c => { const o = completa(c, prazoPje, "laudo"); o.realizadaEm = dataPericia(c); if (!o.dueDoPje) o.due = ""; return o; });
+  const kPainel = new Set([...laudoPainel, ...realizadas].map(procKey).filter(Boolean));
+  const soPje = pjeLaudo.filter(c => c.due && procKey(c) && !kPainel.has(procKey(c)))
+    .map(c => Object.assign({}, c, { tipo: "laudo", soPje: true, temIntimacao: true, constaEntregue: entregues.has(procKey(c)) }));
+  const laudo = uniq([...laudoPainel, ...realizadas, ...soPje]);
+  const prazoEsc = menorPrazo([...d.pje.filter(c => L.pjeEsc.test(c.l)), ...pjeCompl]);
+  const imp = uniq([...d.laudos.filter(ehImp).map(c => completa(c, prazoEsc, "imp")), ...d.pje.filter(c => L.pjeEsc.test(c.l)).map(c => Object.assign({}, c, { tipo: "imp" })), ...pjeCompl.map(c => Object.assign({}, c, { tipo: "imp" }))]);
+  const agenda = agendarReal(d).fazer.map(c => Object.assign({}, c, { tipo: "agenda" }));
   /* intimações = tudo do PJE que NÃO é prazo de laudo, agendar, esclarecimento nem respondido */
   const intim = uniq(d.pje.filter(c => !L.pjeLaudo.test(c.l) && !L.pjeAg.test(c.l) && !L.pjeEsc.test(c.l) && !L.pjeResp.test(c.l))).map(c => Object.assign({}, c, { tipo: "intim" }));
   return { laudo, agenda, intim, imp };

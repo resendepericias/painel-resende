@@ -32,7 +32,7 @@ export function rowHTML(c, opts = {}) {
   const sev = opts.sev || sevDe(c);
   const d = c.due ? brDate(c.due) : (opts.dataAlt ? brDate(opts.dataAlt) : (c.dueRuim ? "conferir" : "sem prazo"));
   const dd = c.due ? diasAte(c.due) : null;
-  const sub = dd == null ? (c.dueRuim ? `<small>due = data da perícia</small>` : "") : (dd < 0 ? `<small>${-dd} ${-dd === 1 ? "dia" : "dias"} vencido</small>` : dd === 0 ? `<small>vence hoje</small>` : `<small>em ${dd} ${dd === 1 ? "dia" : "dias"}</small>`);
+  const sub = dd == null ? (opts.subAlt ? `<small>${esc(opts.subAlt)}</small>` : c.dueRuim ? `<small>due = data da perícia</small>` : "") : (dd < 0 ? `<small>${-dd} ${-dd === 1 ? "dia" : "dias"} vencido</small>` : dd === 0 ? `<small>vence hoje</small>` : `<small>em ${dd} ${dd === 1 ? "dia" : "dias"}</small>`);
   const com = opts.noComarca ? "" : chip(comarcaBonita(comarcaDe(c)));
   const tema = opts.tema ? chip(opts.tema) : "";
   const v = c.v !== undefined ? c.v : valorDe(c);
