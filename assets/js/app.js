@@ -5,7 +5,7 @@ import { temCred, cred, salvaCred, carregaQuadros, cargaConfiavel, cargaSalva, g
 import { sanearPrazos, filas, vencidos, pendentes, pjePendentes, aCobrar, agendarReal, agendaMarcada } from "./regras.js";
 import { carregaAgenda } from "./agenda.js";
 import { APRES, ligaApres, indexaNomes, T } from "./apresentacao.js";
-import { cardsCaixa } from "./trello.js";
+import { cardsCaixa, marcaPericia } from "./trello.js";
 import { indexa, busca, fichaHTML, completaFicha } from "./views/ficha.js";
 import { animaNumeros } from "./ui.js";
 import * as vHoje from "./views/hoje.js";
@@ -90,6 +90,17 @@ function fechaFicha() {
   if (rota().aba === "ficha") { if (history.length > 1) history.back(); else location.hash = "#hoje"; }
 }
 document.addEventListener("click", async e => {
+  const pf = e.target.closest("[data-pf]");
+  if (pf) {
+    e.preventDefault(); e.stopPropagation();
+    const todos = [...DADOS.processos, ...DADOS.laudos]; const c = todos.find(x => x.id === pf.dataset.card); if (!c) return;
+    const feita = pf.dataset.pf === "feita";
+    if (DEV) { toast("teste: " + (feita ? "feita" : "faltou")); return; }
+    pf.parentElement.querySelectorAll("button").forEach(b => b.disabled = true);
+    try { await marcaPericia(DADOS, c, feita); toast(feita ? "perícia feita — card foi para PERÍCIA FEITA" : "faltou — card foi para NÃO COMPARECEU"); await recarrega(); }
+    catch (x) { toast("o Trello não aceitou agora — tente de novo"); pf.parentElement.querySelectorAll("button").forEach(b => b.disabled = false); }
+    return;
+  }
   const f = e.target.closest("[data-ficha]");
   if (f && !e.target.closest("a")) { e.preventDefault(); location.hash = "#ficha/" + f.dataset.ficha; return; }
   const g = e.target.closest("[data-go]"); if (g) { vaiPara(g.dataset.go); return; }

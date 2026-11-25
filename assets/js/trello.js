@@ -108,3 +108,21 @@ export function cardsCaixa(dados) {
 
 /** teste rápido da chave: quem sou eu */
 export async function quemSou() { return get("/members/me?fields=fullName,username"); }
+
+/* ---- Marcar perícia no painel (25/11/2026): um clique move o card ----
+   ✓ feita  → PAINEL LAUDOS › 🖊️ PERICIA FEITA (vira laudo a fazer)
+   ✗ faltou → PAINEL LAUDOS › 🙅 NAO COMPARECEU (sai de tudo)
+   Deixa comentário no card com a data. A data (due) fica marcada como concluída. */
+async function put(path, body) {
+  const r = await fetch(auth(API + path), { method: "PUT", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) { const e = new Error(`Trello ${r.status}`); e.status = r.status; throw e; }
+  return r.json();
+}
+export async function marcaPericia(dados, card, feita) {
+  const l = achaLista(dados, feita ? L.feita : L.naoComp, "laudos");
+  if (!l) throw new Error("lista de destino não encontrada");
+  await put(`/cards/${card.id}`, { idBoard: QUADROS.laudos.id, idList: l.id, pos: "top", dueComplete: true });
+  const hoje = brDate(HOJE(), true);
+  await post(`/cards/${card.id}/actions/comments`, { text: `${hoje} ${agoraHM()}: marcado no painel — ${feita ? "perícia FEITA (card foi para 🖊️ PERÍCIA FEITA, laudo a fazer)" : "periciado NÃO COMPARECEU (card foi para 🙅 NÃO COMPARECEU)"}.` }).catch(() => null);
+  return l;
+}

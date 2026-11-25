@@ -39,19 +39,24 @@ export function rowHTML(c, opts = {}) {
   const val = v ? chip(money(v), "ok") : "";
   const extra = (c.constaEntregue ? chip("consta entregue no FINANÇAS — conferir", "crit") : c.soPje ? chip("só no PJe — conferir", "warn") : "") + (c.dueDoPje ? chip("prazo do PJe", "info") : "") + (opts.extra || "");
   const k = procKey(c);
+  const marcar = opts.marcar && c.id ? botoesPericia(c) : "";
   return `<div class="row ${sev}${k ? " clk" : ""}" ${k ? `data-ficha="${k}"` : ""}>
     <div class="date">${d}${sub}</div>
     <div class="body"><div class="nm">${esc(T(c.n))}</div>
       <div class="sub">${com}${tema}${val}${extra}${chipsLabels(c)}</div></div>
-    ${c.u ? `<a class="go" href="${esc(c.u)}" target="_blank" rel="noopener" title="abrir no Trello">${ico("seta")}</a>` : ""}
+    ${marcar}${c.u ? `<a class="go" href="${esc(c.u)}" target="_blank" rel="noopener" title="abrir no Trello">${ico("seta")}</a>` : ""}
   </div>`;
 }
 
+/** botões da perícia: um clique move o card (25/11/2026) */
+export function botoesPericia(c) {
+  return `<span class="pf-box"><button class="pf ok" data-pf="feita" data-card="${esc(c.id)}" title="perícia feita — vai para laudo a fazer">✓ feita</button><button class="pf crit" data-pf="faltou" data-card="${esc(c.id)}" title="não compareceu — sai da conta">✗ faltou</button></span>`;
+}
 /** item compacto da capa */
-export function miniHTML({ hora = "", texto = "", meta = "", url = "", key = "", cls = "" }) {
+export function miniHTML({ hora = "", texto = "", meta = "", url = "", key = "", cls = "", card = null }) {
   return `<div class="mini ${cls}${key ? " clk" : ""}" ${key ? `data-ficha="${key}"` : ""}><div class="h">${esc(hora)}</div>
     <div class="c">${esc(T(texto))}${meta ? `<div class="meta">${meta}</div>` : ""}</div>
-    ${url ? `<a class="go" href="${esc(url)}" target="_blank" rel="noopener" title="abrir no Trello">${ico("seta")}</a>` : ""}</div>`;
+    ${card ? botoesPericia(card) : ""}${url ? `<a class="go" href="${esc(url)}" target="_blank" rel="noopener" title="abrir no Trello">${ico("seta")}</a>` : ""}</div>`;
 }
 
 export function tile(id, cls, k, t, icone = "") {

@@ -47,7 +47,7 @@ export function render(el, d, ctx = {}) {
   /* ---- HOJE ---- */
   const hojeItens = ORDEM.flatMap(t => doDia(F[t], hoje).map(c => ({ t, c })));
   const agendaHoje = [
-    ...perHoje.sort((a, b) => (horaDe(a) || "99") < (horaDe(b) || "99") ? -1 : 1).map(c => miniHTML({ hora: horaDe(c) || "—", texto: c.n, meta: chip("PERÍCIA", "crit") + chip(comarcaBonita(comarcaDe(c))), url: c.u, key: procKey(c) })),
+    ...perHoje.sort((a, b) => (horaDe(a) || "99") < (horaDe(b) || "99") ? -1 : 1).map(c => miniHTML({ hora: horaDe(c) || "—", texto: c.n, meta: chip("PERÍCIA", "crit") + chip(comarcaBonita(comarcaDe(c))), url: c.u, key: procKey(c), card: c })),
     ...evHoje.map(e => miniHTML({ hora: horaEv(e) || "dia", texto: e.t, meta: ehPlantao(e.t) ? chip("PLANTÃO", "info") : (ehPericiaEv(e.t) ? chip("PERÍCIA", "crit") : "") + (e.loc ? chip(e.loc) : "") })),
   ];
   html += `<section class="card"><h2>${ico("pulso")} Hoje</h2><div class="grade2">

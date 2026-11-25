@@ -43,7 +43,7 @@ export function render(el, d) {
     if (fl.tema !== "todos") rows = rows.filter(c => c.l === fl.tema);
     if (fl.q) { const q = fl.q.toLowerCase(), qd = fl.q.replace(/\D/g, ""); rows = rows.filter(c => c.n.toLowerCase().includes(q) || (qd.length >= 4 && c.n.replace(/\D/g, "").includes(qd))); }
     const comP = rows.filter(c => c.due).sort((a, b) => a.due < b.due ? -1 : 1), semP = rows.filter(c => !c.due).sort((a, b) => (a.realizadaEm || a.n) < (b.realizadaEm || b.n) ? -1 : 1);
-    const linha = c => rowHTML(c, { tema: c.l, dataAlt: c.realizadaEm, subAlt: c.realizadaEm ? "perícia feita" : "", extra: c.realizadaEm ? '<span class="chip warn">perícia realizada — mover card p/ PERÍCIA FEITA</span>' : "" });
+    const linha = c => rowHTML(c, { tema: c.l, dataAlt: c.realizadaEm, subAlt: c.realizadaEm ? "perícia feita" : "", extra: c.realizadaEm ? '<span class="chip warn">data passou — confirme: feita ou faltou?</span>' : "", marcar: !!c.realizadaEm });
     el.querySelector("#laudosLista").innerHTML = rows.length ? (comP.length ? `<h3>Com prazo — ${comP.length}</h3>` + comP.map(linha).join("") : "") + (semP.length ? `<h3>Sem intimação — ${semP.length}</h3>` + semP.map(linha).join("") : "") : vazio("nenhum laudo com esses filtros");
   };
   ["f-stat", "f-com", "f-tema"].forEach(id => { const s = el.querySelector("#" + id); s.value = { "f-stat": fl.stat, "f-com": fl.com, "f-tema": fl.tema }[id]; if (s.value !== ({ "f-stat": fl.stat, "f-com": fl.com, "f-tema": fl.tema }[id])) s.selectedIndex = 0; s.onchange = () => { fl.stat = el.querySelector("#f-stat").value; fl.com = el.querySelector("#f-com").value; fl.tema = el.querySelector("#f-tema").value; paint(); }; });

@@ -303,3 +303,10 @@ main > section.aba.act > * { animation: sobe .38s cubic-bezier(.2,.7,.2,1) both;
 .capa-caixa .hint { white-space: nowrap; }
 @media (max-width: 760px) { .capa-caixa { flex-wrap: wrap; border-radius: 16px; } .capa-caixa input { flex-basis: 100%; order: -1; } .capa-caixa > .ico { display: none; } }
 .txt-crit{color:var(--crit)}
+
+/* botões ✓ feita / ✗ faltou da perícia */
+.pf-box { display: inline-flex; gap: 6px; align-self: center; flex-shrink: 0; }
+.pf { border: 1px solid var(--line2); background: transparent; color: var(--ink2); border-radius: 8px; padding: 5px 9px; font-size: 12.5px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+.pf.ok:hover { border-color: var(--ok); color: var(--ok); }
+.pf.crit:hover { border-color: var(--crit); color: var(--crit); }
+.pf[disabled] { opacity: .5; cursor: wait; }
