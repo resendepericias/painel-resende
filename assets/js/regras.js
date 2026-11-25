@@ -13,7 +13,11 @@ export const ehImp = c => L.imp.test(c.l);
 /* Laudo a fazer = listas de tema + 🎯 HOJE + filas ENTREGAR + 🖊️ PERICIA FEITA.
    ⚠️ COMPLEMENTAR / IMPUGNACAO NÃO entra: é fila própria. */
 /* (25/11/2026) card de instrução ("📤 COMO USAR", legenda etc.) nunca conta como laudo — ela achou o "como usar" somado na fila. */
-export const ehPendente = c => (ehTema(c) || ehHoje7(c) || ehEntregar(c) || ehFeita(c)) && !ehControle(c);
+/* (25/11/2026) Também fica fora: card sem número de processo (card de grupo, tipo "muriae 13 e 14 outubro") e card que diz
+   que a perícia NÃO foi realizada (proposta de honorários, perícia indireta a marcar — ex. 5001003-25.2025.8.13.0313). */
+const RE_SEM_PERICIA = /PERICIA NAO REALIZADA|NAO HA LAUDO A FAZER|AINDA NAO HA LAUDO|PROPOSTA DE HONORARIOS ENVIADA/;
+export const ehPendente = c => (ehTema(c) || ehHoje7(c) || ehEntregar(c) || ehFeita(c)) && !ehControle(c) && !!procKey(c)
+  && !RE_SEM_PERICIA.test((c.n + "\n" + c.desc).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase());
 export const ehTriado = c => ehTema(c) || ehHoje7(c) || ehEntregar(c);
 /* cards de controle (não são processo) */
 export const ehControle = c => L.controle.test(c.l) || L.legenda.test(c.l) || L.caixa.test(c.l) || L.caixaOk.test(c.l) || /^\W*(📊|📖|🎯 A |👉|📤 COMO|🏷️|🧭|📌 LEGENDA|🖥️)/.test(c.n) || /COMO USAR|COMO LER ESTE QUADRO/i.test(c.n);
