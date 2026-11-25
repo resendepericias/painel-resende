@@ -38,6 +38,8 @@ export function sevDe(c) {
    Card entregue que ainda tem due: ignorar o due. */
 export function sanearPrazos(d) {
   let n = 0;
+  /* (25/11/2026) card com a data marcada como CONCLUÍDA no Trello (mark_done da rodada) não conta atraso em quadro nenhum */
+  for (const q of ["laudos", "pje", "processos", "financas"]) for (const c of (d[q] || [])) { if (c.due && c.dueOk) { c.dueConcluido = c.due; c.due = ""; } }
   for (const c of d.laudos) {
     if (!ehPendente(c) || !c.due) continue;
     const per = dataPericia(c);
