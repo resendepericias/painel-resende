@@ -12,7 +12,8 @@ export const ehEntregar = c => L.entregar.test(c.l);
 export const ehImp = c => L.imp.test(c.l);
 /* Laudo a fazer = listas de tema + 🎯 HOJE + filas ENTREGAR + 🖊️ PERICIA FEITA.
    ⚠️ COMPLEMENTAR / IMPUGNACAO NÃO entra: é fila própria. */
-export const ehPendente = c => ehTema(c) || ehHoje7(c) || ehEntregar(c) || ehFeita(c);
+/* (25/11/2026) card de instrução ("📤 COMO USAR", legenda etc.) nunca conta como laudo — ela achou o "como usar" somado na fila. */
+export const ehPendente = c => (ehTema(c) || ehHoje7(c) || ehEntregar(c) || ehFeita(c)) && !ehControle(c);
 export const ehTriado = c => ehTema(c) || ehHoje7(c) || ehEntregar(c);
 /* cards de controle (não são processo) */
 export const ehControle = c => L.controle.test(c.l) || L.legenda.test(c.l) || L.caixa.test(c.l) || L.caixaOk.test(c.l) || /^\W*(📊|📖|🎯 A |👉|📤 COMO|🏷️|🧭|📌 LEGENDA|🖥️)/.test(c.n) || /COMO USAR|COMO LER ESTE QUADRO/i.test(c.n);
@@ -132,8 +133,10 @@ export function filas(d) {
   const completa = (c, m, tipo) => { const o = Object.assign({}, c, { tipo }); const k = procKey(c); const p = k && m.get(k); if (p && (!o.due || p < o.due)) { o.duePainel = o.due; o.due = p; o.dueDoPje = true; } if (p) o.temIntimacao = true; return o; };
   const prazoPje = menorPrazo(pjeLaudo);
   const laudoPainel = pend.map(c => completa(c, prazoPje, "laudo"));
-  const semLaudoK = new Set([...d.laudos.filter(c => L.naoComp.test(c.l) || L.faltou.test(c.l) || ehImp(c)), ...d.financas].map(procKey).filter(Boolean));
-  const realizadas = agendadas(d).filter(c => { const p = dataPericia(c); return p && p < hoje && !semLaudoK.has(procKey(c)); })
+  const RE_FORA = /DESTITU|CANCELAD|NAO COMPARECEU|FALTOU|NOVO PERITO/;
+  const semLaudoK = new Set([...d.laudos.filter(c => L.naoComp.test(c.l) || L.faltou.test(c.l) || ehImp(c)), ...d.financas,
+    ...[...d.pje, ...d.processos].filter(c => RE_FORA.test(semAc(c.n)))].map(procKey).filter(Boolean));
+  const realizadas = agendadas(d).filter(c => { const p = dataPericia(c); return p && p < hoje && !semLaudoK.has(procKey(c)) && !RE_FORA.test(semAc(c.n)); })
     .map(c => { const o = completa(c, prazoPje, "laudo"); o.realizadaEm = dataPericia(c); if (!o.dueDoPje) o.due = ""; return o; });
   const kPainel = new Set([...laudoPainel, ...realizadas].map(procKey).filter(Boolean));
   const soPje = pjeLaudo.filter(c => c.due && procKey(c) && !kPainel.has(procKey(c)))
